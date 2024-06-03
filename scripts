@@ -1,0 +1,38 @@
+nodejs express 환경설정 스크립트
+
+--nodejs 프로젝트생성
+npm init
+
+--express 설치
+npm install express
+
+## **껐다 키기 귀찮으니 nodemon 설치를 해보자**
+
+터미널 켜신 다음 `npm install -g nodemon` 입력하시면 됩니다.
+
+yarn 으로 설치가 잘된다는 분들은 `yarn add global nodemon` 입력하시면 됩니다.
+
+## **Server.js에서 DB접속하려면**
+
+**1. 터미널 켜서 `npm install mongodb@3.6.4` 를 입력해서 라이브러리를 설치합니다.**
+
+
+### React + Node.js 연동하기
+
+1. react와 node 서버 간에 데이터를 주고 받기 위해서는 프록시 모듈이 필요하다
+
+    > Proxy: '대신'이라는 사전적 의미를 가지고 있으며 클라이언트와 서버 사이의 네트워크 통신을 '대리'로 수행하는 미들웨어이다.
+    >
+2. 프록시 설치 `npm install http-proxy-middleware`
+3. 프록시 설정을 위해 client/src에 setupProxy.js를 생성
+
+##ejs 설치
+-- EJS는 서버 데이터를 HTML에 쉽게쉽게 박아넣을 수 있게 도와주는 일종의 HTML 렌더링 엔진입니다.
+npm install ejs
+
+--oracle db모듈설치
+npm install oracledb
+--jwt토큰생성을 위한 패키지설치
+npm install jsonwebtoken
+--파일업로드를 위한 MULTER설치
+npm install multer
