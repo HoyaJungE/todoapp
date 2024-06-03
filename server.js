@@ -22,12 +22,12 @@ app.get('/api/goods', async (req, res) => {
 
     try {
         const result = await db.execute(`
-      SELECT * FROM (
-        SELECT a.*, ROWNUM rnum FROM (
-          SELECT * FROM GOODS ORDER BY GOODS_NO DESC
-        ) a WHERE ROWNUM <= :limit + :offset
-      ) WHERE rnum > :offset
-    `, { limit: parseInt(limit, 10), offset: parseInt(offset, 10) });
+            SELECT * FROM (
+                              SELECT a.*, ROWNUM rnum FROM (
+                                                               SELECT * FROM GOODS ORDER BY GOODS_NO DESC
+                                                           ) a WHERE ROWNUM <= :limit + :offset
+                          ) WHERE rnum > :offset
+        `, { limit: parseInt(limit, 10), offset: parseInt(offset, 10) });
 
         const totalResult = await db.execute(`SELECT COUNT(*) AS total FROM GOODS`);
         const total = totalResult.rows[0].TOTAL;
@@ -42,8 +42,8 @@ app.get('/api/goods/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const result = await db.execute(`
-      SELECT * FROM GOODS WHERE GOODS_NO = :GOODS_NO
-    `, { GOODS_NO: id });
+            SELECT * FROM GOODS WHERE GOODS_NO = :GOODS_NO
+        `, { GOODS_NO: id });
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -62,7 +62,7 @@ app.post('/api/goods', upload.single('GOODS_IMG'), async (req, res) => {
         GOODS_NO_SEQ.NEXTVAL, :GOODS_CATEGORY, :GOODS_NAME, :GOODS_CONTENT, :GOODS_ORIGIN_PRICE, 
         :GOODS_SELL_PRICE, :GOODS_SALE_PRICE, TO_DATE(:GOODS_DATE, 'YYYY-MM-DD'), :GOODS_KEYWORD, :GOODS_THUMBNAIL, :GOODS_IMG
       )
-    `, { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL, GOODS_IMG }, { autoCommit: true });
+    `, { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE: GOODS_DATE.split('T')[0], GOODS_KEYWORD, GOODS_THUMBNAIL, GOODS_IMG }, { autoCommit: true });
         res.json({ message: 'Goods added', id: result.lastRowid });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -88,7 +88,7 @@ app.put('/api/goods/:id', upload.single('GOODS_IMG'), async (req, res) => {
         GOODS_THUMBNAIL = :GOODS_THUMBNAIL,
         GOODS_IMG = :GOODS_IMG
       WHERE GOODS_NO = :GOODS_NO
-    `, { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL, GOODS_IMG, GOODS_NO: id }, { autoCommit: true });
+    `, { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE: GOODS_DATE.split('T')[0], GOODS_KEYWORD, GOODS_THUMBNAIL, GOODS_IMG, GOODS_NO: id }, { autoCommit: true });
         res.json({ message: 'Goods updated' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -99,20 +99,20 @@ app.post('/api/signup', async (req, res) => {
     const { MEMBER_ID, MEMBER_PASSWD, MEMBER_NAME, MEMBER_BIRTH, MEMBER_EMAIL, MEMBER_PHONE, MEMBER_ZIPCODE, MEMBER_ADDR1, MEMBER_ADDR2, SMS_AGREE, EMAIL_AGREE } = req.body;
     try {
         const result = await db.execute(`
-      INSERT INTO MEMBER (
-        MEMBER_NO, MEMBER_ID, MEMBER_PASSWD, MEMBER_NAME, MEMBER_BIRTH, 
-        MEMBER_EMAIL, MEMBER_PHONE, MEMBER_ZIPCODE, MEMBER_ADDR1, MEMBER_ADDR2, 
-        MEMBER_DATE, MEMBER_GRADE, MEMBER_TOTAL, MEMBER_LOG, MEMBER_DELETE, SMS_AGREE, EMAIL_AGREE
-      ) VALUES (
-        MEMBER_NO_SEQ.NEXTVAL, :MEMBER_ID, :MEMBER_PASSWD, :MEMBER_NAME, TO_DATE(:MEMBER_BIRTH, 'YYYY-MM-DD'), 
-        :MEMBER_EMAIL, :MEMBER_PHONE, :MEMBER_ZIPCODE, :MEMBER_ADDR1, :MEMBER_ADDR2, 
-        SYSDATE, 'basic', 0, SYSDATE, '0', :SMS_AGREE, :EMAIL_AGREE
-      )
-    `, { MEMBER_ID, MEMBER_PASSWD, MEMBER_NAME, MEMBER_BIRTH, MEMBER_EMAIL, MEMBER_PHONE, MEMBER_ZIPCODE, MEMBER_ADDR1, MEMBER_ADDR2, SMS_AGREE, EMAIL_AGREE }, { autoCommit: true });
+            INSERT INTO MEMBER (
+                MEMBER_NO, MEMBER_ID, MEMBER_PASSWD, MEMBER_NAME, MEMBER_BIRTH,
+                MEMBER_EMAIL, MEMBER_PHONE, MEMBER_ZIPCODE, MEMBER_ADDR1, MEMBER_ADDR2,
+                MEMBER_DATE, MEMBER_GRADE, MEMBER_TOTAL, MEMBER_LOG, MEMBER_DELETE, SMS_AGREE, EMAIL_AGREE
+            ) VALUES (
+                         MEMBER_NO_SEQ.NEXTVAL, :MEMBER_ID, :MEMBER_PASSWD, :MEMBER_NAME, TO_DATE(:MEMBER_BIRTH, 'YYYY-MM-DD'),
+                         :MEMBER_EMAIL, :MEMBER_PHONE, :MEMBER_ZIPCODE, :MEMBER_ADDR1, :MEMBER_ADDR2,
+                         SYSDATE, 'basic', 0, SYSDATE, '0', :SMS_AGREE, :EMAIL_AGREE
+                     )
+        `, { MEMBER_ID, MEMBER_PASSWD, MEMBER_NAME, MEMBER_BIRTH, MEMBER_EMAIL, MEMBER_PHONE, MEMBER_ZIPCODE, MEMBER_ADDR1, MEMBER_ADDR2, SMS_AGREE, EMAIL_AGREE }, { autoCommit: true });
 
         const newUser = await db.execute(`
-      SELECT * FROM MEMBER WHERE MEMBER_ID = :MEMBER_ID
-    `, { MEMBER_ID });
+            SELECT * FROM MEMBER WHERE MEMBER_ID = :MEMBER_ID
+        `, { MEMBER_ID });
 
         const token = jwt.sign({ id: newUser.rows[0].MEMBER_NO }, SECRET_KEY, { expiresIn: '1h' });
 
@@ -126,8 +126,8 @@ app.post('/api/login', async (req, res) => {
     const { MEMBER_ID, MEMBER_PASSWD } = req.body;
     try {
         const result = await db.execute(`
-      SELECT * FROM MEMBER WHERE MEMBER_ID = :MEMBER_ID AND MEMBER_PASSWD = :MEMBER_PASSWD
-    `, { MEMBER_ID, MEMBER_PASSWD });
+            SELECT * FROM MEMBER WHERE MEMBER_ID = :MEMBER_ID AND MEMBER_PASSWD = :MEMBER_PASSWD
+        `, { MEMBER_ID, MEMBER_PASSWD });
         if (result.rows.length > 0) {
             const token = jwt.sign({ id: result.rows[0].MEMBER_NO }, SECRET_KEY, { expiresIn: '1h' });
             res.json({ message: 'User logged in', user: result.rows[0], token });
