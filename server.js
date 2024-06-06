@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -12,9 +13,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const authRoutes = require('./routes/authRoutes');
 const goodsRoutes = require('./routes/goodsRoutes');
+const menuRoutes = require('./routes/menuRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/goods', goodsRoutes);
+app.use('/api/menu', menuRoutes);
 
 app.listen(port, async () => {
     try {

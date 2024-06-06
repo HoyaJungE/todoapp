@@ -8,13 +8,41 @@ exports.signup = async (req, res) => {
     try {
         const result = await db.execute(`
             INSERT INTO MEMBER (
-                MEMBER_NO, MEMBER_ID, MEMBER_PASSWD, MEMBER_NAME, MEMBER_BIRTH,
-                MEMBER_EMAIL, MEMBER_PHONE, MEMBER_ZIPCODE, MEMBER_ADDR1, MEMBER_ADDR2,
-                MEMBER_DATE, MEMBER_GRADE, MEMBER_TOTAL, MEMBER_LOG, MEMBER_DELETE, SMS_AGREE, EMAIL_AGREE
+                MEMBER_NO
+                ,MEMBER_ID
+                ,MEMBER_PASSWD
+                ,MEMBER_NAME
+                ,MEMBER_BIRTH
+                ,MEMBER_EMAIL
+                ,MEMBER_PHONE
+                ,MEMBER_ZIPCODE
+                ,MEMBER_ADDR1
+                ,MEMBER_ADDR2
+                ,MEMBER_DATE
+                ,MEMBER_GRADE
+                ,MEMBER_TOTAL
+                ,MEMBER_LOG
+                ,MEMBER_DELETE
+                ,SMS_AGREE
+                ,EMAIL_AGREE
             ) VALUES (
-                MEMBER_NO_SEQ.NEXTVAL, :MEMBER_ID, :MEMBER_PASSWD, :MEMBER_NAME, TO_DATE(:MEMBER_BIRTH, 'YYYY-MM-DD'),
-                :MEMBER_EMAIL, :MEMBER_PHONE, :MEMBER_ZIPCODE, :MEMBER_ADDR1, :MEMBER_ADDR2,
-                SYSDATE, 'basic', 0, SYSDATE, '0', :SMS_AGREE, :EMAIL_AGREE
+                MEMBER_NO_SEQ.NEXTVAL
+                ,:MEMBER_ID
+                ,:MEMBER_PASSWD
+                ,:MEMBER_NAME
+                ,TO_DATE(:MEMBER_BIRTH, 'YYYY-MM-DD')
+                ,:MEMBER_EMAIL
+                ,:MEMBER_PHONE
+                ,:MEMBER_ZIPCODE
+                ,:MEMBER_ADDR1
+                ,:MEMBER_ADDR2
+                ,SYSDATE
+                ,'basic'
+                ,0
+                ,SYSDATE
+                ,'0'
+                ,:SMS_AGREE
+                ,:EMAIL_AGREE
             )
         `, { MEMBER_ID, MEMBER_PASSWD, MEMBER_NAME, MEMBER_BIRTH, MEMBER_EMAIL, MEMBER_PHONE, MEMBER_ZIPCODE, MEMBER_ADDR1, MEMBER_ADDR2, SMS_AGREE, EMAIL_AGREE }, { autoCommit: true });
 
@@ -24,7 +52,7 @@ exports.signup = async (req, res) => {
 
         const token = jwt.sign({ id: newUser.rows[0].MEMBER_NO }, SECRET_KEY, { expiresIn: '1h' });
 
-        res.json({ message: 'User signed up', user: newUser.rows[0], token });
+        res.json({ message: '사용자등록', user: newUser.rows[0], token });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -34,13 +62,16 @@ exports.login = async (req, res) => {
     const { MEMBER_ID, MEMBER_PASSWD } = req.body;
     try {
         const result = await db.execute(`
-            SELECT * FROM MEMBER WHERE MEMBER_ID = :MEMBER_ID AND MEMBER_PASSWD = :MEMBER_PASSWD
+            SELECT * 
+              FROM MEMBER 
+             WHERE MEMBER_ID = :MEMBER_ID 
+               AND MEMBER_PASSWD = :MEMBER_PASSWD
         `, { MEMBER_ID, MEMBER_PASSWD });
         if (result.rows.length > 0) {
             const token = jwt.sign({ id: result.rows[0].MEMBER_NO }, SECRET_KEY, { expiresIn: '1h' });
-            res.json({ message: 'User logged in', user: result.rows[0], token });
+            res.json({ message: '로그인 처리중', user: result.rows[0], token });
         } else {
-            res.status(401).json({ error: 'Invalid credentials' });
+            res.status(401).json({ error: '아이디 또는 비밀번호가 일치하지않습니다.' });
         }
     } catch (err) {
         res.status(500).json({ error: err.message });
