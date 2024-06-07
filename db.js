@@ -6,7 +6,7 @@ const dbConfig = {
     connectString: 'localhost:1521/xe'
 };
 
-oracledb.initOracleClient({ libDir: 'C:\\instantclient_19_23' }); // Oracle Instant Client 경로 설정
+oracledb.initOracleClient({ libDir: 'C:\\instantclient_21_13' }); // Oracle Instant Client 경로 설정
 
 async function initialize() {
     try {
@@ -46,7 +46,10 @@ async function execute(query, binds = [], options = {}) {
         const finalSql = buildSql(query, binds);
         console.log('Executing SQL (for debug):', finalSql); // 디버깅용 로그
         const result = await connection.execute(query, binds, options); // 실제 실행
-        console.log('SQL Result:', result);
+        if (query.trim().startsWith('INSERT') || query.trim().startsWith('UPDATE') || query.trim().startsWith('DELETE')) {
+            await connection.commit();
+        }
+        console.log('Rows affected:', result.rowsAffected);
         return result;
     } catch (err) {
         console.error('Database execution error', err);

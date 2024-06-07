@@ -119,7 +119,7 @@ exports.getLatestGoods = async (req, res) => {
                    ,GUBUN
                    ,GOODS_IMG
               FROM GOODS
-             WHERE ROWNUM < 5
+             WHERE ROWNUM <= 3
              ORDER BY GOODS_NO DESC          
         `, {});
 
