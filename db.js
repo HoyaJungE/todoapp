@@ -6,7 +6,7 @@ const dbConfig = {
     connectString: 'localhost:1521/xe'
 };
 
-oracledb.initOracleClient({ libDir: 'C:\\instantclient_21_13' }); // Oracle Instant Client 경로 설정
+oracledb.initOracleClient({ libDir: 'C:\\instantclient_19_23' }); // Oracle Instant Client 경로 설정
 
 async function initialize() {
     try {
