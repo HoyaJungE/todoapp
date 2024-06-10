@@ -1,4 +1,53 @@
 const db = require('../db');
+const { uploadFile } = require('./fileController');
+
+exports.addGood = async (req, res) => {
+    const { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL } = req.body;
+
+    try {
+        let FILE_NO = null;
+        if (req.file) {
+            console.log('Uploading file:', req.file);
+            FILE_NO = await uploadFile(req, res);
+        }
+
+        const query = `
+            INSERT INTO GOODS (
+                GOODS_NO,
+                GOODS_CATEGORY,
+                GOODS_NAME,
+                GOODS_CONTENT,
+                GOODS_ORIGIN_PRICE,
+                GOODS_SELL_PRICE,
+                GOODS_SALE_PRICE,
+                GOODS_DATE,
+                GOODS_KEYWORD,
+                GOODS_THUMBNAIL,
+                FILE_NO
+            ) VALUES (
+                         GOODS_NO_SEQ.NEXTVAL,
+                         :GOODS_CATEGORY,
+                         :GOODS_NAME,
+                         :GOODS_CONTENT,
+                         :GOODS_ORIGIN_PRICE,
+                         :GOODS_SELL_PRICE,
+                         :GOODS_SALE_PRICE,
+                         TO_DATE(:GOODS_DATE, 'YYYY-MM-DD'),
+                         :GOODS_KEYWORD,
+                         :GOODS_THUMBNAIL,
+                         :FILE_NO
+                     )
+        `;
+        const binds = { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL, FILE_NO };
+
+        await db.execute(query, binds);
+        console.log('Goods added:', binds);
+        res.status(201).json({ message: 'Goods added' });
+    } catch (error) {
+        console.error('Error adding goods:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
 
 exports.getGoods = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
@@ -6,11 +55,39 @@ exports.getGoods = async (req, res) => {
 
     try {
         const result = await db.execute(`
-            SELECT * FROM (
-                SELECT a.*, ROWNUM rnum FROM (
-                    SELECT * FROM GOODS ORDER BY GOODS_NO DESC
-                ) a WHERE ROWNUM <= :limit + :offset
-            ) WHERE rnum > :offset
+            SELECT
+                GOODS_NO,
+                GOODS_CATEGORY,
+                GOODS_NAME,
+                GOODS_CONTENT,
+                GOODS_ORIGIN_PRICE,
+                GOODS_SELL_PRICE,
+                GOODS_SALE_PRICE,
+                GOODS_DATE,
+                GOODS_KEYWORD,
+                GOODS_THUMBNAIL,
+                FILE_NO
+            FROM (
+                     SELECT a.*, ROWNUM rnum
+                     FROM (
+                              SELECT
+                                  GOODS_NO,
+                                  GOODS_CATEGORY,
+                                  GOODS_NAME,
+                                  GOODS_CONTENT,
+                                  GOODS_ORIGIN_PRICE,
+                                  GOODS_SELL_PRICE,
+                                  GOODS_SALE_PRICE,
+                                  GOODS_DATE,
+                                  GOODS_KEYWORD,
+                                  GOODS_THUMBNAIL,
+                                  FILE_NO
+                              FROM GOODS
+                              ORDER BY GOODS_NO DESC
+                          ) a
+                     WHERE ROWNUM <= :limit + :offset
+                 )
+            WHERE rnum > :offset
         `, { limit: parseInt(limit, 10), offset: parseInt(offset, 10) });
 
         const totalResult = await db.execute(`SELECT COUNT(*) AS total FROM GOODS`);
@@ -26,39 +103,22 @@ exports.getGoodById = async (req, res) => {
     const { id } = req.params;
     try {
         const result = await db.execute(`
-            SELECT * FROM GOODS WHERE GOODS_NO = :GOODS_NO
+            SELECT
+                GOODS_NO,
+                GOODS_CATEGORY,
+                GOODS_NAME,
+                GOODS_CONTENT,
+                GOODS_ORIGIN_PRICE,
+                GOODS_SELL_PRICE,
+                GOODS_SALE_PRICE,
+                GOODS_DATE,
+                GOODS_KEYWORD,
+                GOODS_THUMBNAIL,
+                FILE_NO
+            FROM GOODS
+            WHERE GOODS_NO = :GOODS_NO
         `, { GOODS_NO: id });
         res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
-exports.addGood = async (req, res) => {
-    const { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_KEYWORD, GOODS_THUMBNAIL } = req.body;
-    const GOODS_IMG = req.file ? req.file.buffer : null;
-
-    try {
-        const result = await db.execute(`
-            INSERT INTO GOODS (
-                GOODS_NO, GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE,
-                GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL, GOODS_IMG
-            ) VALUES (
-                GOODS_NO_SEQ.NEXTVAL, :GOODS_CATEGORY, :GOODS_NAME, :GOODS_CONTENT, :GOODS_ORIGIN_PRICE,
-                :GOODS_SELL_PRICE, :GOODS_SALE_PRICE, SYSDATE, :GOODS_KEYWORD, :GOODS_THUMBNAIL, :GOODS_IMG
-            )
-        `, {
-            GOODS_CATEGORY: GOODS_CATEGORY || null,
-            GOODS_NAME: GOODS_NAME || null,
-            GOODS_CONTENT: GOODS_CONTENT || null,
-            GOODS_ORIGIN_PRICE: GOODS_ORIGIN_PRICE || null,
-            GOODS_SELL_PRICE: GOODS_SELL_PRICE || null,
-            GOODS_SALE_PRICE: GOODS_SALE_PRICE || null,
-            GOODS_KEYWORD: GOODS_KEYWORD || null,
-            GOODS_THUMBNAIL: GOODS_THUMBNAIL || null,
-            GOODS_IMG: GOODS_IMG || null
-        }, { autoCommit: true });
-        res.json({ message: 'Goods added', id: result.lastRowid });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -67,23 +127,29 @@ exports.addGood = async (req, res) => {
 exports.updateGood = async (req, res) => {
     const { id } = req.params;
     const { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_KEYWORD, GOODS_THUMBNAIL } = req.body;
-    const GOODS_IMG = req.file ? req.file.buffer : null;
+    let FILE_NO = null;
 
     try {
-        const result = await db.execute(`
-            UPDATE GOODS 
-            SET 
-                GOODS_CATEGORY = :GOODS_CATEGORY, 
-                GOODS_NAME = :GOODS_NAME, 
-                GOODS_CONTENT = :GOODS_CONTENT, 
-                GOODS_ORIGIN_PRICE = :GOODS_ORIGIN_PRICE, 
-                GOODS_SELL_PRICE = :GOODS_SELL_PRICE, 
-                GOODS_SALE_PRICE = :GOODS_SALE_PRICE, 
-                GOODS_KEYWORD = :GOODS_KEYWORD, 
+        if (req.file) {
+            console.log('Uploading file:', req.file);
+            FILE_NO = await uploadFile(req, res);
+        }
+
+        const query = `
+            UPDATE GOODS
+            SET
+                GOODS_CATEGORY = :GOODS_CATEGORY,
+                GOODS_NAME = :GOODS_NAME,
+                GOODS_CONTENT = :GOODS_CONTENT,
+                GOODS_ORIGIN_PRICE = :GOODS_ORIGIN_PRICE,
+                GOODS_SELL_PRICE = :GOODS_SELL_PRICE,
+                GOODS_SALE_PRICE = :GOODS_SALE_PRICE,
+                GOODS_KEYWORD = :GOODS_KEYWORD,
                 GOODS_THUMBNAIL = :GOODS_THUMBNAIL,
-                GOODS_IMG = :GOODS_IMG
+                FILE_NO = :FILE_NO
             WHERE GOODS_NO = :GOODS_NO
-        `, {
+        `;
+        const binds = {
             GOODS_CATEGORY: GOODS_CATEGORY || null,
             GOODS_NAME: GOODS_NAME || null,
             GOODS_CONTENT: GOODS_CONTENT || null,
@@ -92,9 +158,11 @@ exports.updateGood = async (req, res) => {
             GOODS_SALE_PRICE: GOODS_SALE_PRICE || null,
             GOODS_KEYWORD: GOODS_KEYWORD || null,
             GOODS_THUMBNAIL: GOODS_THUMBNAIL || null,
-            GOODS_IMG: GOODS_IMG || null,
+            FILE_NO: FILE_NO || null,
             GOODS_NO: id
-        }, { autoCommit: true });
+        };
+
+        await db.execute(query, binds);
         res.json({ message: 'Goods updated' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -102,26 +170,29 @@ exports.updateGood = async (req, res) => {
 };
 
 exports.getLatestGoods = async (req, res) => {
+    const { cnt = 3 } = req.query;
+
     try {
         const result = await db.execute(`
-            SELECT GOODS_NO
-                   ,GOODS_CATEGORY
-                   ,GOODS_NAME
-                   ,GOODS_CONTENT
-                   ,GOODS_ORIGIN_PRICE
-                   ,GOODS_SELL_PRICE
-                   ,GOODS_SALE_PRICE
-                   ,GOODS_DATE
-                   ,GOODS_KEYWORD
-                   ,GOODS_READCNT
-                   ,GOODS_PICK
-                   ,GOODS_THUMBNAIL
-                   ,GUBUN
-                   ,GOODS_IMG
-              FROM GOODS
-             WHERE ROWNUM <= 3
-             ORDER BY GOODS_NO DESC          
-        `, {});
+            SELECT
+                GOODS_NO,
+                GOODS_CATEGORY,
+                GOODS_NAME,
+                GOODS_CONTENT,
+                GOODS_ORIGIN_PRICE,
+                GOODS_SELL_PRICE,
+                GOODS_SALE_PRICE,
+                GOODS_DATE,
+                GOODS_KEYWORD,
+                GOODS_READCNT,
+                GOODS_PICK,
+                GOODS_THUMBNAIL,
+                GUBUN,
+                FILE_NO
+            FROM GOODS
+            WHERE ROWNUM <= :cnt
+            ORDER BY GOODS_NO DESC
+        `, { cnt: parseInt(cnt, 10) });
 
         res.json({ goods: result.rows });
     } catch (err) {
