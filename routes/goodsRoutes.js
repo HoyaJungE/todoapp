@@ -1,25 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const goodsController = require('../controllers/goodsController');
 const multer = require('multer');
-const path = require('path');
+const { addGood, getGoods, getGoodById, updateGood, getLatestGoods } = require('../controllers/goodsController');
 
-// Set up file upload directory
-const uploadDirectory = path.join(__dirname, '../uploads');
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDirectory);
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
     },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
     }
 });
-const upload = multer({ storage });
 
-router.get('/', goodsController.getGoods);
-router.get('/latest/', goodsController.getLatestGoods);
-router.get('/:id', goodsController.getGoodById);
-router.post('/', upload.single('FILE_NO'), goodsController.addGood);
-router.put('/:id', upload.single('FILE_NO'), goodsController.updateGood);
+const upload = multer({ storage: storage });
+
+router.post('/', upload.array('files'), addGood);
+router.get('/', getGoods);
+router.get('/latest', getLatestGoods);
+router.get('/:id', getGoodById);
+router.put('/:id', upload.array('files'), updateGood);
 
 module.exports = router;
