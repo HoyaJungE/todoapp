@@ -7,16 +7,14 @@ exports.addGood = async (req, res) => {
     try {
         let FILE_NO = null;
         if (req.files && req.files.length > 0) {
-            FILE_NO = await getNextFileNo();
-            await uploadFile(req, res, FILE_NO);
+            FILE_NO = await uploadFile(req, res, null);
+            console.log(FILE_NO);
         }
 
-        const query = `
-            INSERT INTO GOODS (GOODS_NO, GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL, FILE_NO)
+        const query = `INSERT INTO GOODS (GOODS_NO, GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL, FILE_NO)
             VALUES (GOODS_NO_SEQ.NEXTVAL, :GOODS_CATEGORY, :GOODS_NAME, :GOODS_CONTENT, :GOODS_ORIGIN_PRICE, :GOODS_SELL_PRICE, :GOODS_SALE_PRICE, TO_DATE(:GOODS_DATE, 'YYYY-MM-DD'), :GOODS_KEYWORD, :GOODS_THUMBNAIL, :FILE_NO)
         `;
         const binds = { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL, FILE_NO };
-
         await db.execute(query, binds);
         res.status(201).json({ message: 'Goods added' });
     } catch (error) {
@@ -66,12 +64,18 @@ exports.getGoodById = async (req, res) => {
 exports.updateGood = async (req, res) => {
     const { id } = req.params;
     const { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL } = req.body;
-    let FILE_NO = null;
+    let {FILE_NO} = req.body;
 
+    console.log('param FILE_NO : ' + FILE_NO );
     try {
         if (req.files && req.files.length > 0) {
-            FILE_NO = await getNextFileNo();
+            if(FILE_NO == null){
+                FILE_NO = await getNextFileNo();
+            }
+
             await uploadFile(req, res, FILE_NO);
+        }else{
+            FILE_NO = null;
         }
 
         const query = `

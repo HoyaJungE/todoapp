@@ -2,22 +2,29 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { addGood, getGoods, getGoodById, updateGood, getLatestGoods } = require('../controllers/goodsController');
-
-const storage = multer.diskStorage({
+const fs = require("fs");
+const boardStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+        //폴더없으면 폴더 생성
+        let dir = 'uploads/board/';
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
+        cb(null, Date.now() + '_' + file.originalname);
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: boardStorage });
 
-router.post('/', upload.array('files'), addGood);
 router.get('/', getGoods);
 router.get('/latest', getLatestGoods);
 router.get('/:id', getGoodById);
+
+router.post('/', upload.array('files'), addGood);
+
 router.put('/:id', upload.array('files'), updateGood);
 
 module.exports = router;

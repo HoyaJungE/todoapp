@@ -13,12 +13,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const authRoutes = require('./routes/authRoutes');
 const goodsRoutes = require('./routes/goodsRoutes');
 const menuRoutes = require('./routes/menuRoutes');
-const fileRoutes = require('./routes/fileRoutes'); // 파일 경로 추가
+const fileRoutes = require('./routes/fileRoutes');
+const roleRoutes = require('./routes/roleRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/goods', goodsRoutes);
 app.use('/api/menu', menuRoutes);
-app.use('/api/file', fileRoutes); // 파일 경로 사용
+app.use('/api/file', fileRoutes);
+app.use('/api/role', roleRoutes);
 
 app.listen(port, async () => {
     try {
