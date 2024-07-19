@@ -69,9 +69,9 @@ async function updateRole(req, res) {
     const query = `
         UPDATE Role
         SET
-            UPPR_ROLE_NO,
-            ROLE_NM,
-            ROLE_CN
+            UPPR_ROLE_NO = :UPPR_ROLE_NO,
+            ROLE_NM = :ROLE_NM,
+            ROLE_CN = :ROLE_CN
         WHERE ROLE_NO = :ROLE_NO
     `;
     const binds = { ROLE_NO: id, UPPR_ROLE_NO, ROLE_NM, ROLE_CN};
