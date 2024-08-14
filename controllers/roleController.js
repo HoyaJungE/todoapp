@@ -97,10 +97,46 @@ async function deleteRole(req, res) {
     }
 }
 
+async function addMemberRole(req, res) {
+    const { ROLE_NO, MEMBER_NO } = req.body;
+    const query = `
+        INSERT INTO MEMBER_ROLE (
+            ROLE_NO,
+            MEMBER_NO,
+        ) VALUES (
+            :ROLE_NO,
+            :MEMBER_NO
+        )
+    `;
+    const binds = { ROLE_NO, MEMBER_NO };
+
+    try {
+        await db.execute(query, binds);
+        res.status(201).json({ message: 'MemberRole added' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function deleteMemberRole(req, res) {
+    const { ROLE_NO, MEMBER_NO } = req.body;
+    const query = 'DELETE FROM ROLE_NO WHERE ROLE_NO = :Role_NO AND MEMBER_NO = :MEMBER_NO';
+    const binds = { ROLE_NO: ROLE_NO, MEMBER_NO: MEMBER_NO };
+
+    try {
+        await db.execute(query, binds);
+        res.json({ message: 'MemberRole deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     getRoles,
     getRoleById,
     addRole,
     updateRole,
-    deleteRole
+    deleteRole,
+    addMemberRole,
+    deleteMemberRole
 };

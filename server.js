@@ -15,12 +15,14 @@ const goodsRoutes = require('./routes/goodsRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const roleRoutes = require('./routes/roleRoutes');
+const memberRoutes = require('./routes/memberRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/goods', goodsRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/file', fileRoutes);
 app.use('/api/role', roleRoutes);
+app.use('/api/member', memberRoutes);
 
 app.listen(port, async () => {
     try {
