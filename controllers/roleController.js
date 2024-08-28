@@ -131,6 +131,40 @@ async function deleteMemberRole(req, res) {
     }
 }
 
+async function getRoleMembers(req, res) {
+    const { ROLE_NO } = req.params;
+    const query = `
+        SELECT B.MEMBER_NO,
+               B.MEMBER_ID,
+               B.MEMBER_PASSWD,
+               B.MEMBER_NAME,
+               B.MEMBER_BIRTH,
+               B.MEMBER_EMAIL,
+               B.MEMBER_PHONE,
+               B.MEMBER_ZIPCODE,
+               B.MEMBER_ADDR1,
+               B.MEMBER_ADDR2,
+               B.MEMBER_DATE,
+               B.MEMBER_GRADE,
+               B.MEMBER_TOTAL,
+               B.MEMBER_LOG,
+               B.MEMBER_DELETE,
+               B.SMS_AGREE,
+               B.EMAIL_AGREE
+        FROM MEMBER_ROLE A , MEMBER B
+        WHERE A.MEMBER_NO = B.MEMBER_NO
+          AND A.ROLE_NO = :ROLE_NO
+        ORDER BY B.MEMBER_NO
+    `;
+    const binds = { ROLE_NO: ROLE_NO};
+    try {
+        const result = await db.execute(query, binds);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     getRoles,
     getRoleById,
@@ -138,5 +172,6 @@ module.exports = {
     updateRole,
     deleteRole,
     addMemberRole,
-    deleteMemberRole
+    deleteMemberRole,
+    getRoleMembers
 };

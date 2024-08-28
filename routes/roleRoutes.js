@@ -4,6 +4,7 @@ const router = express.Router();
 const roleController = require('../controllers/roleController');
 
 // Define routes for menu operations
+router.get('/roleMembers', roleController.getRoleMembers);
 router.get('/', roleController.getRoles);
 router.get('/:id', roleController.getRoleById);
 router.post('/', roleController.addRole);
