@@ -132,7 +132,8 @@ async function deleteMemberRole(req, res) {
 }
 
 async function getRoleMembers(req, res) {
-    const { ROLE_NO } = req.params;
+    const { roleNo } = req.query;
+    console.log(req.query);
     const query = `
         SELECT B.MEMBER_NO,
                B.MEMBER_ID,
@@ -153,10 +154,10 @@ async function getRoleMembers(req, res) {
                B.EMAIL_AGREE
         FROM MEMBER_ROLE A , MEMBER B
         WHERE A.MEMBER_NO = B.MEMBER_NO
-          AND A.ROLE_NO = :ROLE_NO
+          AND A.ROLE_NO = :roleNo
         ORDER BY B.MEMBER_NO
     `;
-    const binds = { ROLE_NO: ROLE_NO};
+    const binds = { roleNo: roleNo};
     try {
         const result = await db.execute(query, binds);
         res.json(result.rows);
