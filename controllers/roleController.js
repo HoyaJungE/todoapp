@@ -102,7 +102,7 @@ async function addMemberRole(req, res) {
     const query = `
         INSERT INTO MEMBER_ROLE (
             ROLE_NO,
-            MEMBER_NO,
+            MEMBER_NO
         ) VALUES (
             :ROLE_NO,
             :MEMBER_NO
@@ -120,7 +120,7 @@ async function addMemberRole(req, res) {
 
 async function deleteMemberRole(req, res) {
     const { ROLE_NO, MEMBER_NO } = req.body;
-    const query = 'DELETE FROM ROLE_NO WHERE ROLE_NO = :Role_NO AND MEMBER_NO = :MEMBER_NO';
+    const query = 'DELETE FROM MEMBER_ROLE WHERE ROLE_NO = :ROLE_NO AND MEMBER_NO = :MEMBER_NO';
     const binds = { ROLE_NO: ROLE_NO, MEMBER_NO: MEMBER_NO };
 
     try {
