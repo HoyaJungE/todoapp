@@ -102,10 +102,12 @@ async function addMemberRole(req, res) {
     const query = `
         INSERT INTO MEMBER_ROLE (
             ROLE_NO,
-            MEMBER_NO
+            MEMBER_NO,
+            INSRT_DT
         ) VALUES (
             :ROLE_NO,
-            :MEMBER_NO
+            :MEMBER_NO,
+            SYSDATE
         )
     `;
     const binds = { ROLE_NO, MEMBER_NO };
@@ -166,6 +168,63 @@ async function getRoleMembers(req, res) {
     }
 }
 
+async function addRoleMenu(req, res) {
+    const { ROLE_NO, MENU_NO } = req.body;
+    const query = `
+        INSERT INTO ROLE_MNEU (
+            ROLE_NO,
+            MENU_NO,
+            INSRT_DT           
+        ) VALUES (
+            :ROLE_NO,
+            :MENU_NO,
+            SYSDATE
+        )
+    `;
+    const binds = { ROLE_NO, MENU_NO };
+
+    try {
+        await db.execute(query, binds);
+        res.status(201).json({ message: 'MemberRole added' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function deleteRoleMenu(req, res) {
+    const { ROLE_NO, MENU_NO } = req.body;
+    const query = 'DELETE FROM ROLE_MNEU WHERE ROLE_NO = :ROLE_NO AND MENU_NO = :MENU_NO';
+    const binds = { ROLE_NO: ROLE_NO, MENU_NO: MENU_NO };
+
+    try {
+        await db.execute(query, binds);
+        res.json({ message: 'MemberRole deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function getRoleMenus(req, res) {
+    const { roleNo } = req.query;
+    console.log(req.query);
+    const query = `
+        SELECT B.MENU_NO,
+               B.MENU_NAME,
+        FROM ROLE_MENU A , MENU B
+        WHERE A.ROLE_NO = B.ROLE_NO
+          AND A.ROLE_NO = :roleNo
+          AND B.MENU_TYPE = 1
+        ORDER BY B.MENU_NO
+    `;
+    const binds = { roleNo: roleNo};
+    try {
+        const result = await db.execute(query, binds);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 module.exports = {
     getRoles,
     getRoleById,
@@ -174,5 +233,8 @@ module.exports = {
     deleteRole,
     addMemberRole,
     deleteMemberRole,
-    getRoleMembers
+    getRoleMembers,
+    addRoleMenu,
+    deleteRoleMenu,
+    getRoleMenus
 };
