@@ -64,18 +64,28 @@ exports.getGoodById = async (req, res) => {
 exports.updateGood = async (req, res) => {
     const { id } = req.params;
     const { GOODS_CATEGORY, GOODS_NAME, GOODS_CONTENT, GOODS_ORIGIN_PRICE, GOODS_SELL_PRICE, GOODS_SALE_PRICE, GOODS_DATE, GOODS_KEYWORD, GOODS_THUMBNAIL } = req.body;
-    let {FILE_NO} = req.body;
+    let tmpFileNo = null;
 
-    console.log('param FILE_NO : ' + FILE_NO );
+    // 데이터베이스에서 파일 정보 가져오기
+    const fileInfo = await db.execute(`
+        SELECT FILE_NO, FILE_SN, FILE_PHYSC_NM, FILE_PATH, FILE_LOGIC_NM, FILE_EXTSN_NM, FILE_BYTE_SIZE, FILE_ORD
+        FROM FILE_DTL
+        WHERE FILE_NO = (SELECT FILE_NO FROM GOODS WHERE GOODS_NO = :GOODS_NO)
+    `, { GOODS_NO: id });
+
     try {
-        if (req.files && req.files.length > 0) {
-            if(FILE_NO == null){
-                FILE_NO = await getNextFileNo();
-            }
-
-            await uploadFile(req, res, FILE_NO);
+        /* 기존 게시글매핑된 FILE_NO 에 파일이존재하면 */
+        if(fileInfo.rows.length > 0){
+            tmpFileNo = fileInfo.rows[0].FILE_NO;
         }else{
-            FILE_NO = null;
+            tmpFileNo = null;
+        }
+
+        if (req.files && req.files.length > 0) {
+            if(tmpFileNo == null){
+                tmpFileNo = await getNextFileNo();
+            }
+            await uploadFile(req, res, tmpFileNo);
         }
 
         const query = `
@@ -103,7 +113,7 @@ exports.updateGood = async (req, res) => {
             GOODS_DATE: GOODS_DATE || null,
             GOODS_KEYWORD: GOODS_KEYWORD || null,
             GOODS_THUMBNAIL: GOODS_THUMBNAIL || null,
-            FILE_NO: FILE_NO || null,
+            FILE_NO: tmpFileNo || null,
             GOODS_NO: id
         };
 
