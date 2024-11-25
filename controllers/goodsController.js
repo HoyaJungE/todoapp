@@ -75,6 +75,9 @@ exports.updateGood = async (req, res) => {
 
     try {
         /* 기존 게시글매핑된 FILE_NO 에 파일이존재하면 */
+
+        console.log(fileInfo.rows);
+        console.log(fileInfo.rows.length);
         if(fileInfo.rows.length > 0){
             tmpFileNo = fileInfo.rows[0].FILE_NO;
         }else{
@@ -100,8 +103,7 @@ exports.updateGood = async (req, res) => {
                 GOODS_DATE = TO_DATE(:GOODS_DATE, 'YYYY-MM-DD'),
                 GOODS_KEYWORD = :GOODS_KEYWORD,
                 GOODS_THUMBNAIL = :GOODS_THUMBNAIL,
-                FILE_NO = :FILE_NO,
-                WRTER_NO = : :WRTER_NO
+                FILE_NO = :FILE_NO
             WHERE GOODS_NO = :GOODS_NO
         `;
         const binds = {
@@ -115,7 +117,6 @@ exports.updateGood = async (req, res) => {
             GOODS_KEYWORD: GOODS_KEYWORD || null,
             GOODS_THUMBNAIL: GOODS_THUMBNAIL || null,
             FILE_NO: tmpFileNo || null,
-            WRTER_NO: WRTER_NO || null,
             GOODS_NO: id
         };
 
