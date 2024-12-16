@@ -12,7 +12,10 @@ router.put('/:id', roleController.updateRole);
 router.delete('/:id', roleController.deleteRole);
 router.post('/addMemberRole', roleController.addMemberRole);
 router.post('/deleteMemberRole', roleController.deleteMemberRole);
+router.post('/addMemberRoleList', roleController.addMemberRoleList);
+router.post('/deleteMemberRoleList', roleController.deleteMemberRoleList);
 router.post('/addMRoleMenu', roleController.addRoleMenu);
 router.post('/deleteRoleMenu', roleController.deleteRoleMenu);
+
 
 module.exports = router;
