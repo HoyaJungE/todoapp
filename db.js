@@ -6,7 +6,15 @@ const dbConfig = {
     connectString: 'localhost:1521/xe'
 };
 
-oracledb.initOracleClient({ libDir: 'C:\\instantclient_21_13' }); // Oracle Instant Client 경로 설정
+/*
+const remoteDbConfig = {
+    user: 'ADMIN',
+    password: 'Fkaus125125@@',
+    connectString: '(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.ap-chuncheon-1.oraclecloud.com))(connect_data=(service_name=g3d831f30bcf966_dfwk1bqn0epmpnqw_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
+};
+*/
+
+oracledb.initOracleClient({ libDir: 'C:\\instantclient_21_13' }); // Oracle Instant Client 경로 설정 로컬db 사용시
 
 async function initialize() {
     try {
@@ -46,9 +54,15 @@ async function execute(query, binds = [], options = {}) {
         const finalSql = buildSql(query, binds);
         console.log('Executing SQL (for debug):', finalSql); // 디버깅용 로그
         const result = await connection.execute(query, binds, options); // 실제 실행
-        if (query.trim().startsWith('INSERT') || query.trim().startsWith('UPDATE') || query.trim().startsWith('DELETE')) {
+        
+        // DML 문에 대한 자동 커밋 처리
+        if (query.trim().toUpperCase().startsWith('INSERT') || 
+            query.trim().toUpperCase().startsWith('UPDATE') || 
+            query.trim().toUpperCase().startsWith('DELETE') ||
+            query.trim().toUpperCase().startsWith('MERGE')) {  // MERGE 문 추가
             await connection.commit();
         }
+        
         console.log('Rows affected:', result.rowsAffected);
         return result;
     } catch (err) {
