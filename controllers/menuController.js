@@ -22,6 +22,52 @@ async function getMenus(req, res) {
     }
 }
 
+async function getRoleMenus(req, res) {
+    const { roleNo } = req.params;
+    try {
+        const result = await db.execute(`
+            SELECT MENU_NO
+            FROM ROLE_MENU
+            WHERE ROLE_NO = :roleNo
+        `, { roleNo });
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+async function updateRoleMenus(req, res) {
+    const { roleNo, menuNos } = req.body;
+    
+    try {
+        await db.execute('DELETE FROM ROLE_MENU WHERE ROLE_NO = :roleNo', { roleNo });
+
+        if (menuNos && menuNos.length > 0) {
+            const insertQuery = `
+                INSERT INTO ROLE_MENU (
+                    ROLE_MENU_NO,
+                    ROLE_NO,
+                    MENU_NO,
+                    CREATE_DT
+                ) VALUES (
+                    ROLE_MENU_NO_SEQ.NEXTVAL,
+                    :roleNo,
+                    :menuNo,
+                    SYSDATE
+                )
+            `;
+
+            await Promise.all(menuNos.map(menuNo => 
+                db.execute(insertQuery, { roleNo, menuNo })
+            ));
+        }
+
+        res.json({ message: '메뉴 권한이 업데이트되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
 async function getMenuById(req, res) {
     const { id } = req.params;
     try {
@@ -118,5 +164,7 @@ module.exports = {
     getMenuById,
     addMenu,
     updateMenu,
-    deleteMenu
+    deleteMenu,
+    getRoleMenus,
+    updateRoleMenus
 };
